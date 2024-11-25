@@ -1,0 +1,23 @@
+.wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1680px;
+}
+.wrap .notice {
+  width: 1024px;
+}
+.wrap .notice ul li {
+  border: 5px solid "red";
+  background-color: orange;
+}
+.wrap .notice ul li:hover {
+  background-color: pink;
+}
+.wrap .slide {
+  width: 760px;
+}
+.wrap .banner {
+  width: 300px;
+}/*# sourceMappingURL=test.css.map */

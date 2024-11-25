@@ -7,6 +7,6 @@ import CeoPage from "./pages/CeoPage";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <IndexPage></IndexPage>
-    <CeoPage></CeoPage>
+    {/* <CeoPage></CeoPage> */}
   </StrictMode>,
 );
