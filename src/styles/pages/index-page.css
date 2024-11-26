@@ -1,0 +1,39 @@
+.main {
+  margin: 0 auto;
+  max-width: 1200px;
+}
+.slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: skyblue;
+  height: 300px;
+}
+.content {
+  display: flex;
+}
+.notice {
+  display: flex;
+  background-color: orange;
+  width: calc(100% / 3);
+  height: 200px;
+  align-items: center;
+  justify-content: center;
+}
+.banner {
+  display: flex;
+  background-color: green;
+  width: calc(100% / 3);
+  height: 200px;
+  align-items: center;
+  justify-content: center;
+}
+.link {
+  display: flex;
+  background-color: yellow;
+  width: calc(100% / 3);
+  height: 200px;
+  align-items: center;
+  justify-content: center;
+}

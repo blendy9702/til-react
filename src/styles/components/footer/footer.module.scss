@@ -1,0 +1,36 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  height: 100px;
+  background-color: aquamarine;
+  margin: 0 auto;
+  .footer-logo {
+    width: 150px;
+    height: 100px;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .copyright {
+    width: 600px;
+    height: 100px;
+    background-color: gray;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .sns {
+    width: 150px;
+    height: 100px;
+    background-color: hotpink;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
