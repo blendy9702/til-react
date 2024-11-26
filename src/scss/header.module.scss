@@ -5,6 +5,7 @@
   .layout {
     @include flex-center;
     width: $basic-width;
+    margin: 0 auto;
     .logo {
     }
     .gnb {
