@@ -1,20 +1,45 @@
+import styled from "@emotion/styled";
 import { useState } from "react";
 
+const ModalWinDiv = styled.div`
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+`;
+
 const Sample3 = () => {
-  const [isLike, setIsLike] = useState(0);
-  const [isUnLike, setIsUnLike] = useState(0);
-  const clickAdd = () => {
-    setIsLike(isLike + 1);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const 보이기 = () => {
+    setIsOpen(true);
   };
-  const clickMinus = () => {
-    setIsUnLike(isUnLike + 1);
+
+  const 숨기기 = () => {
+    setIsOpen(false);
   };
+
   return (
     <div>
-      <h2>현재 좋아요 수 : {isLike}</h2>
-      <h2>현재 싫어요 수 : {isUnLike}</h2>
-      <button onClick={clickAdd}>좋아요</button>
-      <button onClick={clickMinus}>싫어요</button>
+      <button onClick={보이기}>보기</button>
+
+      {/* {isOpen ? (
+        <ModalWinDiv>
+          <button onClick={숨기기}>보이지마</button>
+        </ModalWinDiv>
+      ) : null} */}
+
+      {isOpen && (
+        <ModalWinDiv>
+          <button onClick={숨기기}>보이지마</button>
+        </ModalWinDiv>
+      )}
     </div>
   );
 };
