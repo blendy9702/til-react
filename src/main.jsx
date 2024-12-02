@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
-import EventSample2 from "./event-sample/EventSample2";
 import "./index.css";
+import EventSample3 from "./event-sample/EventSample3";
 
 createRoot(document.getElementById("root")).render(
   <>
-    <EventSample2 />
+    <EventSample3 />
   </>,
 );

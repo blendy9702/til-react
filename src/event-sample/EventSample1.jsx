@@ -20,13 +20,38 @@ const EventSample1 = () => {
   const [idCheck, setIdCheck] = useState(false);
 
   const handleChange = event => {
+    const { name, value, type, checked, files } = event.target;
+
+    if (type === "checkbox") {
+      setFormData({
+        ...formData,
+        [name]: checked
+          ? [...formData.hobby, value]
+          : [...formData.hobby.filter(item => item !== value)],
+      });
+      return;
+    }
+    if (name === "pic") {
+      setFormData({ ...formData, [name]: files[0] });
+      return;
+    }
+    if (name === "doc") {
+      setFormData({ ...formData, [name]: [...files] });
+      return;
+    }
+
     setFormData({
       ...formData,
-      [event.target.name]: event.target.value,
+      [name]: value,
     });
   };
-  const handleClick = event => {};
-  const handleIdCheck = () => {};
+  // const handleClick = event => {};
+
+  const handleIdCheck = () => {
+    alert(`${formData.userid} 를 들고 백엔드 갔다왔더니 중복 아니랍니다.`);
+    setIdCheck(true);
+  };
+
   const handleSubmit = event => {
     // 기본 동작 즉, 웹브라우저로 action 하려는 것 막고 유효성 검사
     event.preventDefault();
@@ -62,16 +87,7 @@ const EventSample1 = () => {
               minLength={4}
               onChange={event => handleChange(event)}
             />
-            <button
-              type="button"
-              onClick={() => {
-                alert(
-                  `${formData.userid} 를 들고 백엔드 갔다왔더니 중복 아니랍니다.`,
-                );
-
-                setIdCheck(true);
-              }}
-            >
+            <button type="button" onClick={() => handleIdCheck()}>
               아이디 중복검사
             </button>
           </div>
@@ -206,7 +222,7 @@ const EventSample1 = () => {
               type="file"
               name="pic"
               id="pic"
-              value={formData.pic}
+              // value={formData.pic}
               accept="image/png, image/jpeg"
               onChange={event => handleChange(event)}
             />
@@ -216,7 +232,7 @@ const EventSample1 = () => {
             <input
               type="file"
               name="doc"
-              value={formData.doc}
+              // value={formData.doc}
               id="doc"
               multiple
               onChange={event => handleChange(event)}
@@ -225,20 +241,23 @@ const EventSample1 = () => {
 
           <div>
             <label>취미</label>
-            <input
-              type="checkbox"
-              value="골프"
-              name="hobby"
-              id="ho1"
-              defaultChecked
-            />
-            <label htmlFor="ho1">골프</label>
-            <input type="checkbox" value="운동" name="hobby" id="ho2" />
-            <label htmlFor="ho2">운동</label>
-            <input type="checkbox" value="공부" name="hobby" id="ho3" />
-            <label htmlFor="ho3">공부</label>
-            <input type="checkbox" value="요리" name="hobby" id="ho4" />
-            <label htmlFor="ho4">요리</label>
+            {["골프", "운동", "공부", "요리"].map((item, index) => {
+              return (
+                <span key={index}>
+                  {" "}
+                  <input
+                    type="checkbox"
+                    value={item}
+                    name="hobby"
+                    id={`ho${index + 1}`}
+                    // defaultChecked
+                    checked={formData.hobby.includes(item)}
+                    onChange={event => handleChange(event)}
+                  />
+                  <label htmlFor={`ho${index + 1}`}>{item}</label>
+                </span>
+              );
+            })}
           </div>
         </fieldset>
         <div>
