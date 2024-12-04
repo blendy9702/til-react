@@ -1,4 +1,6 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
+import { deleteMember, getMembers } from "../apis/members";
 
 const Member = () => {
   const API_URL = "http://localhost:5000/member";
@@ -7,7 +9,7 @@ const Member = () => {
   //   서버에 등록할 데이터 관리
   const initData = { email: "", pw: "" };
   const [formData, setFormData] = useState(initData);
-  //   선택된 맴버 관리
+  //   선택된 멤버 관리
   const selectData = { id: "", email: "", pw: "" };
   const [selectUser, setSelectUser] = useState(selectData);
   //   현재 선택된 멤버 수정 중?
@@ -32,33 +34,17 @@ const Member = () => {
     postMember({ ...formData });
   };
   // API 메서드
-  const getMembers = async () => {
+  const getMember = async id => {
     try {
-      const res = await fetch(`${API_URL}`);
-      const data = await res.json();
-      setMemberList(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const getMember = () => {};
-  const deleteMember = async id => {
-    try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-      getMembers();
+      const res = await axios.get(`${API_URL}/${id}`);
+      console.log(res.data);
     } catch (error) {
       console.log(error);
     }
   };
   const postMember = async item => {
     try {
-      await fetch(`${API_URL}`, {
-        method: "POST",
-        headers: { "Content-Tpye": "application/json" },
-        body: JSON.stringify(item),
-      });
+      await axios.post(`${API_URL}`, item);
       console.log(item);
       getMembers();
       setFormData(initData);
@@ -66,21 +52,31 @@ const Member = () => {
       console.log(error);
     }
   };
-  const putMember = item => {
+  const putMember = async item => {
     try {
-      fetch(`${API_URL}/${item.id}`, {
-        method: "PUT",
-        headers: { "Content-Tpye": "application/json" },
-        body: JSON.stringify(item),
-      });
-      getMember();
+      await axios.put(`${API_URL}/${item.id}`, item);
+      getMembers();
       setIsEdit(false);
     } catch (error) {
       console.log(error);
     }
   };
+
+  // 호출하면서 호출된 결과를 atate 업데이트에 반영
+  const callApiMembers = async () => {
+    const result = await getMembers();
+    setMemberList(result);
+  };
+  const callApiDelete = async id => {
+    const result = await deleteMember(id);
+    if (result === "success") {
+      callApiMembers();
+    } else {
+      alert("다시 시도하세요.");
+    }
+  };
   useEffect(() => {
-    getMembers();
+    callApiMembers();
     return () => {};
   }, []);
 

@@ -1,251 +1,13 @@
-# fetch 로 REST API 연동해 보기
+# Axios 활용
 
-- `async...await` 로 비동기처리를 기준
+- https://axios-http.com/kr/docs/intro
 
-## 1. 사전조건은 백엔드가 활성화 되어 있어야 한다.
+- `npm install axios`
 
-- 터미널에 프롬프트 현재 폴더가 `server` 여야 함.
-- `npm run start` 실행
-- `http://192.168.0.66:5000/todos`
-- {"title":"", "content":""}
-
-## 2. fetch 로 데이터 연동하기
-
-- `jwt` 인증없이 진행인 경우
-- `javaScript web token` 을 말함.
-- `/src/todos/`폴더 생성
-- `/src/todos/Todo.jsx`폴더 생성
-- `/src/main.jsx` 임폴트
+## 1. 기본 사용법
 
 ```jsx
-import { useEffect, useState } from "react";
-
-const Todo = () => {
-  const initData = {
-    title: "",
-    content: "",
-  };
-  // 화면 갱신용 state
-  const [todoList, setTodoList] = useState([]);
-  const [formData, setFormData] = useState(initData);
-
-  // 내용 수정용 state
-  const initPutData = {
-    id: "",
-    title: "",
-    content: "",
-  };
-  const [putData, setPutData] = useState(initPutData);
-
-  // 전체목록
-  const getTodos = async () => {
-    console.log("서버접속 후 전체 할일 가져옮");
-    try {
-      const res = await fetch(`http://192.168.0.66:5000/todos`);
-      const data = await res.json();
-      //새로 리랜더링하라!
-      setTodoList(data);
-    } catch (error) {
-      console.log(`에러입니다 : ${error}`);
-      console.log(`잠시 후 다시 시도해주세요.`);
-    }
-  };
-  // 상세내용보기
-  const getTodoDetail = async _id => {
-    try {
-      const res = await fetch(`http://192.168.0.66:5000/todos/${_id}`);
-      const data = await res.json();
-      console.log(data);
-    } catch (error) {
-      console.log(`네트워크 오류입니다. ${error}`);
-      console.log(`잠시 후 다시 시도해 주세요.`);
-    }
-  };
-  // 할일등록 1개
-  const postTodo = async () => {
-    try {
-      const res = await fetch(`http://192.168.0.66:5000/todos`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      alert("할일이 등록되었습니다.");
-      getTodos();
-      setFormData(initData);
-    } catch (error) {
-      console.log(`네트웍이 불안정합니다. ${error}`);
-      console.log(`잠시후 다시 시도해 주세요.`);
-    }
-  };
-  // 할일삭제 1개
-  const deleteTodo = async _id => {
-    try {
-      const res = await fetch(`http://192.168.0.66:5000/todos/${_id}`, {
-        method: "DELETE",
-      });
-      alert("데이터가 성공적으로 삭제되었습니다");
-      getTodos();
-    } catch (error) {
-      console.log(`네트워크 오류입니다. ${error}`);
-      console.log(`잠시 후 다시 시도해 주세요.`);
-    }
-  };
-  // 할일 1개의 내용 수정
-  const putTodo = async () => {
-    const { id, title, content } = putData;
-    try {
-      await fetch(`http://192.168.0.66:5000/todos/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          content,
-        }),
-      });
-      alert("수정되었습니다.");
-      // 다시읽기
-      getTodos();
-    } catch (error) {
-      console.log(`서버가 불안정합니다. ${error}`);
-      console.log(`잠시 후 시도해주세요`);
-    }
-  };
-
-  // 이벤트 핸들링
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-  const handleSubmit = e => {
-    // 웹브라우저 새로갱신 안되요.
-    e.preventDefault();
-    if (formData.title === "") {
-      alert("제목을 입력하세요.");
-      return;
-    }
-    if (formData.content === "") {
-      alert("내용을 입력하세요.");
-      return;
-    }
-    postTodo();
-  };
-  // 상세보기 핸들링
-  const handleClickDetail = _item => {
-    setPutData({ ..._item });
-  };
-  // 수정용 핸들링
-  const handleChangePut = e => {
-    const { name, value } = e.target;
-    setPutData({ ...putData, [name]: value });
-  };
-  const handleSubmitPut = e => {
-    // 아래가 없으면 새로 고침되면서 모든 임시 초기화 된다.
-    // 반드시 필요.
-    e.preventDefault();
-    if (putData.title === "") {
-      alert("제목이 필요합니다.");
-      return;
-    }
-    if (putData.content === "") {
-      alert("내용이 필요합니다.");
-      return;
-    }
-
-    putTodo();
-  };
-
-  // 컴포넌트 보이면 최초 딱 한번 실행
-  useEffect(() => {
-    // 처음에 todo 로 이동하면, 할일 목록 전체 가져 옮
-    getTodos();
-
-    return () => {};
-  }, []);
-  return (
-    <div>
-      <h1>Todo 등록</h1>
-      <div>
-        <form onSubmit={e => handleSubmit(e)}>
-          <div>
-            <label>제목</label>
-            <input
-              name="title"
-              value={formData.title}
-              onChange={e => handleChange(e)}
-            />
-          </div>
-          <div>
-            <label>내용</label>
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={e => handleChange(e)}
-            ></textarea>
-          </div>
-          <div>
-            <button type="submit">등록</button>
-          </div>
-        </form>
-      </div>
-      <h2>상세보기</h2>
-      <div>
-        <form onSubmit={e => handleSubmitPut(e)}>
-          <div>
-            <label>선택한 제목</label>
-            <input
-              type="text"
-              name="title"
-              value={putData.title}
-              onChange={e => handleChangePut(e)}
-            />
-          </div>
-          <div>
-            <label>선택한 내용</label>
-            <textarea
-              name="content"
-              value={putData.content}
-              onChange={e => handleChangePut(e)}
-            ></textarea>
-          </div>
-          <div>
-            <button type="submit">수정</button>
-          </div>
-        </form>
-      </div>
-      <h2>Todo List</h2>
-      <div>
-        {todoList.map(item => {
-          return (
-            <div key={item.id}>
-              {item.id} : {item.title}
-              <button
-                type="button"
-                onClick={() => {
-                  deleteTodo(item.id);
-                }}
-              >
-                삭제
-              </button>
-              <button type="button" onClick={() => setPutData({ ...item })}>
-                수정
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-export default Todo;
-```
-
-- member
-
-```jsx
+import axios from "axios";
 import { useEffect, useState } from "react";
 
 const Member = () => {
@@ -255,7 +17,7 @@ const Member = () => {
   //   서버에 등록할 데이터 관리
   const initData = { email: "", pw: "" };
   const [formData, setFormData] = useState(initData);
-  //   선택된 맴버 관리
+  //   선택된 멤버 관리
   const selectData = { id: "", email: "", pw: "" };
   const [selectUser, setSelectUser] = useState(selectData);
   //   현재 선택된 멤버 수정 중?
@@ -282,19 +44,24 @@ const Member = () => {
   // API 메서드
   const getMembers = async () => {
     try {
-      const res = await fetch(`${API_URL}`);
-      const data = await res.json();
-      setMemberList(data);
+      const res = await axios.get(`${API_URL}`);
+      // const data = await res.json();
+      setMemberList(res.data);
     } catch (error) {
       console.log(error);
     }
   };
-  const getMember = () => {};
+  const getMember = async id => {
+    try {
+      const res = await axios.get(`${API_URL}/${id}`);
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const deleteMember = async id => {
     try {
-      await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
+      await axios.delete(`${API_URL}/${id}`);
       getMembers();
     } catch (error) {
       console.log(error);
@@ -302,11 +69,7 @@ const Member = () => {
   };
   const postMember = async item => {
     try {
-      await fetch(`${API_URL}`, {
-        method: "POST",
-        headers: { "Content-Tpye": "application/json" },
-        body: JSON.stringify(item),
-      });
+      await axios.post(`${API_URL}`, item);
       console.log(item);
       getMembers();
       setFormData(initData);
@@ -314,14 +77,10 @@ const Member = () => {
       console.log(error);
     }
   };
-  const putMember = item => {
+  const putMember = async item => {
     try {
-      fetch(`${API_URL}/${item.id}`, {
-        method: "PUT",
-        headers: { "Content-Tpye": "application/json" },
-        body: JSON.stringify(item),
-      });
-      getMember();
+      await axios.put(`${API_URL}/${item.id}`, item);
+      getMembers();
       setIsEdit(false);
     } catch (error) {
       console.log(error);
@@ -417,3 +176,125 @@ const Member = () => {
 
 export default Member;
 ```
+
+## 2. 기본 사용법
+
+- 우리가 fetch 또는 axios 를 활용해서 request 하면
+- API 백엔드 서버는 response 를 한다.
+
+```json
+{
+  // `data`는 서버가 제공하는 응답입니다.
+  "data": {},
+
+  // `status`는 HTTP 상태 코드입니다.
+  "status": 200,
+
+  // `statusText`는 HTTP 상태 메시지입니다.
+  "statusText": "OK",
+
+  // `headers`는 HTTP 헤더입니다.
+  // 모든 헤더 이름은 소문자이며, 괄호 표기법을 사용하여 접근할 수 있습니다.
+  // 예시: `response.headers['content-type']`
+  "headers": {},
+
+  // `config`는 요청을 위해 `Axios`가 제공하는 구성입니다.
+  "config": {},
+
+  // `request`는 이번 응답으로 생성된 요청입니다.
+  // 이것은 node.js에서 마지막 ClientRequest 인스턴스 입니다.
+  // 브라우저에서는 XMLHttpRequest입니다.
+  "request": {}
+}
+```
+
+### 2.1. status 값 참조
+
+- https://developer.mozilla.org/ko/docs/Web/HTTP/Status
+
+```jsx
+const getMembers = async () => {
+  try {
+    const res = await axios.get(`${API_URL}`);
+    console.log(res.status);
+    // 정상적으로 데이터의 결과가 있으면
+    // API 회신의 200 류의 값은 성공입
+    const responseStatus = res.status.toString().charAt(0);
+    if (responseStatus === "2") {
+      setMemberList(res.data);
+    } else {
+      console.log("데이터가 없어요.");
+    }
+  } catch (error) {
+    // 404 또는 400 류라면 나를 의심하자.
+    const errorStatus = error.response.status.toString().charAt(0);
+    if (errorStatus === "5") {
+      alert("서버가 꺼짐요.");
+    }
+    if (errorStatus === "4") {
+      alert("호출에 실패함.");
+    }
+    console.log(error);
+  }
+};
+```
+
+### 2.2. 뱍엔드 협업 axios, fetch 등 코딩 컨벤션
+
+- `/src/apis` 폴더 생성 권장
+- `/src/apis/config.js` 파일 생성 권장
+
+```js
+import axios from "axios";
+
+export const API_URL = "http://localhost:5000/member";
+export const axiosInstance = axios.create();
+```
+
+- `/src/apis/member.js` 기능별 담당 파일 생성
+
+```js
+import { API_URL, axiosInstance } from "./config";
+
+export const getMembers = async setFunc => {
+  try {
+    const res = await axiosInstance.get(`${API_URL}`);
+    console.log(res.status);
+    // 정상적으로 데이터의 결과가 있으면
+    // API 회신의 200 류의 값은 성공입
+    const responseStatus = res.status.toString().charAt(0);
+    if (responseStatus === "2") {
+      setFunc(res.data);
+    } else {
+      console.log("데이터가 없어요.");
+    }
+  } catch (error) {
+    // 404 또는 400 류라면 나를 의심하자.
+    const errorStatus = error.response.status.toString().charAt(0);
+    if (errorStatus === "5") {
+      alert("서버가 꺼짐요.");
+    }
+    if (errorStatus === "4") {
+      alert("호출에 실패함.");
+    }
+    console.log(error);
+  }
+};
+```
+
+- `/src/apis/todos.js` 기능별 담당 파일 생성
+- `/src/apis/diary.js` 기능별 담당 파일 생성
+
+### 2.3. package.json 수정(proxy 설정)
+
+- 수작업
+- `"proxy": "백엔드 ip 주소 작성"`
+
+### 2.4. 향후 시간이 지나면서 코드 고도화를 시도한다.
+
+- 1단계
+  : API 호출과 화면갱신 및 state 관리를 .jsx에서 작성
+- 2단계
+  : API 호출을 별도파일로 분리, state 관리도 옮겨보기
+- 마지막 단계
+  : API 호출은 js 에서 진행, 결과를 리턴받아서 jsx에서 활용하도록 시도
