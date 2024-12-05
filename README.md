@@ -323,3 +323,301 @@ function List() {
   );
 }
 ```
+
+## 9. 공통 레이아웃 적용하기
+
+```
+  <header></header>
+  <main> URI 에 따라서 변함. </main>
+  <footer></footer>
+```
+
+### 9.1. 기본 Link 이해하기
+
+```jsx
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+//  as 는 alias 라는 문법으로 별칭을 지음
+import HomePage from "./pages/Index";
+import AboutPage from "./pages/about/Index";
+import TeamPage from "./pages/about/Team";
+import ServicePage from "./pages/service/Index";
+import NowPage from "./pages/service/Now";
+import BlogPage from "./pages/blog/Index";
+import DetailPage from "./pages/blog/Detail";
+import BlogListPage from "./pages/blog/List";
+import NotFound from "./pages/404";
+
+function App() {
+  return (
+    <Router>
+      <header>
+        <Link to="/">home🏠</Link>
+        <Link to="/about">about🛴</Link>
+        <Link to="/about/team">about/team🛴</Link>
+        <Link to="/service">service⚽</Link>
+        <Link to="/service/now">service/now⚽</Link>
+        <Link to="/blog">blog🤼‍♂️</Link>
+        <Link to="/blog/1">blog/:id🤼‍♂️</Link>
+        <Link to="/blog/list?id=1&cate=design">blog/list?쿼리스트링🤼‍♂️</Link>
+      </header>
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+
+          <Route path="/about">
+            <Route index element={<AboutPage />} />
+            <Route path="team" element={<TeamPage />} />
+          </Route>
+
+          <Route path="/service">
+            <Route index element={<ServicePage />} />
+            <Route path="now" element={<NowPage />} />
+          </Route>
+
+          <Route path="/blog">
+            <Route element={<BlogPage />} />
+            <Route path=":id" element={<DetailPage />} />
+            <Route path="list?id=1&cate=design" element={<BlogListPage />} />
+          </Route>
+          <Route
+            path="*"
+            element={
+              <h1>
+                <NotFound />
+              </h1>
+            }
+          />
+        </Routes>
+      </main>
+      <footer>하단</footer>
+    </Router>
+  );
+}
+
+export default App;
+```
+
+### 9.2. 컴포넌트로 Header.jsx 만들기
+
+```jsx
+import { Link } from "react-router-dom";
+
+const Header = () => {
+  return (
+    <header>
+      <Link to="/">home🏠</Link>
+      <Link to="/about">about🛴</Link>
+      <Link to="/about/team">about/team🛴</Link>
+      <Link to="/service">service⚽</Link>
+      <Link to="/service/now">service/now⚽</Link>
+      <Link to="/blog">blog🤼‍♂️</Link>
+      <Link to="/blog/1">blog/:id🤼‍♂️</Link>
+      <Link to="/blog/list?id=1&cate=design">blog/list?쿼리스트링🤼‍♂️</Link>
+    </header>
+  );
+};
+
+export default Header;
+```
+
+### 9.3. 컴포넌트에 Footer.jsx 만들기
+
+- 만들었다고 치자!
+
+## 10. 페이지에 Props 전달하기
+
+```jsx
+<Route path="/" element={<HomePage title={"NicelyCompany"} year={2024} />} />
+```
+
+```jsx
+// 목(Mock Data) 데이터
+const BlogDatas = [
+  { id: 1, title: "블로그 1", cate: "design", content: "디자인 관련글 1" },
+  { id: 2, title: "블로그 2", cate: "market", content: "마케팅 관련글" },
+  { id: 3, title: "블로그 3", cate: "design", content: "디자인 관련글 2" },
+  { id: 4, title: "블로그 4", cate: "idea", content: "아이디어 관련글" },
+  { id: 5, title: "블로그 5", cate: "design", content: "디자인 관련글 3" },
+];
+.........
+<Route index element={<BlogPage data={BlogDatas} />} />
+```
+
+## 11. 페이지에 Props 중 children 전달하기
+
+```jsx
+<Footer>
+  <p>Copyright 2024 by Lee</p>
+  {isMember ? <p>로그인 완료.</p> : <p>로그인이 필요합니다.</p>}
+</Footer>
+```
+
+```jsx
+const Footer = ({ children }) => {
+  return <footer>{children}</footer>;
+};
+
+export default Footer;
+```
+
+## 12. react-router-dom 의 `Outlet` 이해하기
+
+- `Router` 를 이용해서 페이지의 레이아웃을 유지하고
+- `Router` 의 `Outlet 장소`의 `path` 에 따라 `컴포넌트를 출력`
+- 반드시 `중첩 Route 여야 가능`
+- Sample ex)
+
+```
+1. Layout 용 페이지를 만들자
+2. 처음에 index 컴포넌트가 보여서
+3. 사용자가 블로그 목록의 상세보기를 클릭하면
+4. 레이아웃에 상세 내용을 출력
+```
+
+- /src/App.jsx
+
+```jsx
+<Route path="/blog" element={<Layout />}>
+  <Route index element={<BlogPage data={BlogDatas} />} />
+  <Route path=":id" element={<DetailPage />} />
+  <Route path="list" element={<ListPage />} />
+</Route>
+```
+
+- /src/pages/blog/Layout.jsx
+
+```jsx
+import { Outlet } from "react-router-dom";
+
+const Layout = () => {
+  return (
+    <div>
+      <div style={{ backgroundColor: "hotpink" }}>로컬메뉴</div>
+      <div>
+        <h2> Outlet 자리 </h2>
+        <div
+          style={{
+            backgroundColor: "yellowgreen",
+            width: "100%",
+            minHeight: 50,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 250,
+          }}
+        >
+          <Outlet />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Layout;
+```
+
+## 13. `Outlet` 과 `Children`의 비교
+
+- 공통점
+  : JSX 를 전달
+
+- 차이점
+  : `children`은 `props` 로 전들 (태그의 내용 처럼)
+
+  ```jsx
+  <Footer>
+    <p>Copyright 2024 by Lee</p>
+    {isMember ? <p>로그인 완료.</p> : <p>로그인이 필요합니다.</p>}
+  </Footer>
+  ```
+
+  : `Outlet` 은 `중첩 Route` 에 전달
+
+```jsx
+<Route path="/blog" element={<Layout />}>
+  <Route /> />
+  <Route /> />
+</Route>
+```
+
+## 14. 패스 및 Params 를 실시간 생성하기
+
+### 14.1. `문자열` 또는 `백틱`으로 생성하면 된다.
+
+```jsx
+const path = "/service";
+const path = `/service`;
+const path = `/service/${id}`;
+// SearchParams 의 예
+const path = `/service/?age=${id}&pass=${12345}`;
+```
+
+### 14.2. SearchParams 만들기.
+
+```js
+const queryStr = createSearchParams({ 키: 값, 키: 값 }).toString();
+const path = queryStr;
+```
+
+### 14.3. `Link to=경로` 말고 `js 로 강제 이동`하기.
+
+```js
+const navigate = useNavigate();
+const path = `/service`;
+navigate(path);
+```
+
+### 14.4. 현재 `path`를 알고 싶을 때
+
+```js
+import { useLocation } from "react-router-dom";
+
+const {pathname, search, state} = useLocation();
+
+console.log(location)
+
+// 담겨진 결과
+// http://localhost:5173/blog?hi=5
+{
+    "pathname": "/blog",
+    "search": "?hi=5",
+    "hash": "",
+    "state": null,
+    "key": "default"
+}
+
+```
+
+### 14.5. `state` 사용자 모르게 라우터에 전달하기
+
+- `Link` 로는 어려움
+- `useNavigate()` 이용
+
+```js
+import { useNavigate } from "react-router-dom";
+
+const navigate = useNavigate();
+const path = `/service`;
+navigate(path);
+```
+
+```js
+import { useNavigate } from "react-router-dom";
+
+const navigate = useNavigate();
+const path = `/service`;
+
+const 숨긴정보 = {
+  memo: "제품페이지에서 왔어요.",
+  good: "제품 1번을 보고 있었지요.",
+  favorite: "제품 1에 관심이 많네요.",
+};
+
+navigate(
+  {
+    pathname: path,
+    search: "?hi=5",
+  },
+  { state: { 숨긴정보 } },
+);
+```

@@ -1,5 +1,9 @@
-function Index() {
-  return <div>첫페이지</div>;
+function Index({ title, year }) {
+  return (
+    <div>
+      {title} 첫페이지 : 버전 {year}{" "}
+    </div>
+  );
 }
 
 export default Index;
