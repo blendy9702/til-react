@@ -1,133 +1,118 @@
-import { useState, lazy, Suspense } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Loading from "./components/Loading";
+import { useContext } from "react";
+import { UserInfoContext, UserInfoProvider } from "./contexts/UserInfoContext";
 
-const Footer = lazy(() => import("./components/Footer"));
-const Header = lazy(() => import("./components/Header"));
-const NotFound = lazy(() => import("./pages/404"));
-const HomePage = lazy(() => import("./pages/Index"));
-const AboutPage = lazy(() => import("./pages/about/Index"));
-const TeamPage = lazy(() => import("./pages/about/Team"));
-const ServicePage = lazy(() => import("./pages/service/Index"));
-const NowPage = lazy(() => import("./pages/service/Now"));
-const Layout = lazy(() => import("./pages/blog/Layout"));
-const BlogPage = lazy(() => import("./pages/blog/Index"));
-const DetailPage = lazy(() => import("./pages/blog/Detail"));
-const ListPage = lazy(() => import("./pages/blog/List"));
+const Header = () => {
+  const { userInfo, setUserInfo } = useContext(UserInfoContext);
+  return (
+    <header>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <p>로고</p>
+        <nav>
+          {userInfo.userId === "" ? (
+            <div>
+              <button
+                onClick={() => {
+                  setUserInfo({
+                    userId: "hong",
+                    userName: "gildong",
+                    userRole: "MEMBER",
+                  });
+                }}
+              >
+                로그인
+              </button>
+              <button onClick={() => {}}>회원가입</button>
+            </div>
+          ) : (
+            <div>
+              <button
+                onClick={() => {
+                  setUserInfo({
+                    userId: "",
+                    userName: "",
+                    userRole: "GUEST",
+                  });
+                }}
+              >
+                로그아웃
+              </button>
+              <button onClick={() => {}}>{userInfo.userName}님 정보수정</button>
+            </div>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+};
+const Main = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return (
+    <main>
+      {userInfo.userId === "" ? (
+        <div>로그인을 하셔야 서비스를 이용할 수 있습니다.</div>
+      ) : (
+        <div>
+          <Chracter />
+          <Friend />
+          <Point />
+          <Map />
+          <FAQ />
+        </div>
+      )}
+    </main>
+  );
+};
+const Footer = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <footer>하단 {userInfo.userRole}</footer>;
+};
 
-// 목(Mock Data) 데이터
-const BlogDatas = [
-  { id: 1, title: "블로그 1", cate: "design", content: "디자인 관련글 1" },
-  { id: 2, title: "블로그 2", cate: "market", content: "마케팅 관련글" },
-  { id: 3, title: "블로그 3", cate: "design", content: "디자인 관련글 2" },
-  { id: 4, title: "블로그 4", cate: "idea", content: "아이디어 관련글" },
-  { id: 5, title: "블로그 5", cate: "design", content: "디자인 관련글 3" },
-];
+const Chracter = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return (
+    <div>
+      <div>{userInfo.userName}님 캐릭터 변경 서비스</div>
+      <div>
+        <ChoiceChracter>캐릭터 종류 선택 서비스</ChoiceChracter>
+      </div>
+    </div>
+  );
+};
+
+const ChoiceChracter = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <div>{userInfo.userName}님 캐릭터 종류 선택 서비스</div>;
+};
+
+const Friend = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <div>{userInfo.userName}님 친구관리 서비스</div>;
+};
+
+const Point = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <div>{userInfo.userName}님 포인트 구매 서비스</div>;
+};
+
+const Map = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <div>{userInfo.userName}님 주변 지도 안내</div>;
+};
+
+const FAQ = () => {
+  const { userInfo } = useContext(UserInfoContext);
+  return <div>{userInfo.userName}님 고객센터 FAQ 서비스</div>;
+};
 
 function App() {
-  const [isMember, setIsMember] = useState(true);
   return (
-    <Router>
-      <Header />
-      <main>
-        <Routes>
-          {/* 로딩창 구현.. */}
-          <Route
-            path="/"
-            element={
-              <Suspense fallback={<Loading />}>
-                <HomePage title={"NicelyCompany"} year={2024} />
-              </Suspense>
-            }
-          ></Route>
-
-          <Route path="/about">
-            <Route
-              index
-              element={
-                <Suspense fallback={<Loading />}>
-                  <AboutPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="team"
-              element={
-                <Suspense fallback={<Loading />}>
-                  <TeamPage />
-                </Suspense>
-              }
-            />
-          </Route>
-
-          <Route path="/service">
-            <Route
-              index
-              element={
-                <Suspense fallback={<Loading />}>
-                  <ServicePage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="now"
-              element={
-                <Suspense fallback={<Loading />}>
-                  <NowPage />
-                </Suspense>
-              }
-            />
-          </Route>
-
-          <Route
-            path="/blog"
-            element={
-              <Suspense fallback={<Loading />}>
-                <Layout />
-              </Suspense>
-            }
-          >
-            <Route
-              index
-              element={
-                <Suspense fallback={<Loading />}>
-                  <BlogPage data={BlogDatas} />
-                </Suspense>
-              }
-            />
-            <Route
-              path=":id"
-              element={
-                <Suspense fallback={<Loading />}>
-                  <DetailPage />
-                </Suspense>
-              }
-            />
-            <Route
-              path="list"
-              element={
-                <Suspense fallback={<Loading />}>
-                  <ListPage />
-                </Suspense>
-              }
-            />
-          </Route>
-
-          <Route
-            path="*"
-            element={
-              <Suspense fallback={<Loading />}>
-                <NotFound />
-              </Suspense>
-            }
-          />
-        </Routes>
-      </main>
-      <Footer>
-        <p>Copyright 2024 By Hong</p>
-        {isMember ? <p>로그인 하셨네요.</p> : <p>로그인 전입니다.</p>}
-      </Footer>
-    </Router>
+    <div>
+      <UserInfoProvider>
+        <Header />
+        <Main />
+        <Footer />
+      </UserInfoProvider>
+    </div>
   );
 }
 

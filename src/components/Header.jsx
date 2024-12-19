@@ -6,6 +6,7 @@ const Header = () => {
       <Link to="/">home🏠</Link>
       <Link to="/about">about🛴</Link>
       <Link to="/about/team">about/team🛴</Link>
+      <LInk to="/about/test_1">숫자놀이</Link>
       <Link to="/service">service⚽</Link>
       <Link to="/service/now">service/now⚽</Link>
       <Link to="/blog">blog🤼‍♂️</Link>
