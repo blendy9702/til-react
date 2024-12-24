@@ -1,135 +1,29 @@
-# Context API
+# useRef
 
+- `리랜더링 해도 값을 보관`한다.
+- 화면 출력 용도는 아니다.
 - 용도
-  : 웹서비스에 기본적으로 관리할 자료 보관 및 처리
-  : 사용자 로그인 정보
-  : 테마
-  : 장바구니 등
+  : html 태그 참조
+  : 변수값 참조
 
-- 특징
-  : 개별 컴포넌트의 state 가 아니고, 앱 잔체의 state 이다.
-  : Context 로도 충분하지만, 좀 더 복잡한 데이터 처리 라이브러리 많음.
-  : Redux(난이도 높음)
-  : Recoil(난이도 낮음, 국내 활성화)
-  : Zustand(난이도 낮음, 해외 활성화, 국내 활성화 중)
-
-## useState 로 state 관리를 해보자
-
-- useState 는 각각의 컴포넌트가 state 를 관리하는 형식
-- Drilling 으로 인한 문제점을 이해해 보자.
-- 예제)
+## DOM 요소 접근
 
 ```jsx
-import { useState } from "react";
-
-const Header = ({ userInfo, setUserInfo }) => {
-  return (
-    <header>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <p>로고</p>
-        <nav>
-          {userInfo.userId === "" ? (
-            <div>
-              <button
-                onClick={() => {
-                  setUserInfo({
-                    userId: "hong",
-                    userName: "gildong",
-                    userRole: "MEMBER",
-                  });
-                }}
-              >
-                로그인
-              </button>
-              <button onClick={() => {}}>회원가입</button>
-            </div>
-          ) : (
-            <div>
-              <button
-                onClick={() => {
-                  setUserInfo({
-                    userId: "",
-                    userName: "",
-                    userRole: "GUEST",
-                  });
-                }}
-              >
-                로그아웃
-              </button>
-              <button onClick={() => {}}>{userInfo.userName}님 정보수정</button>
-            </div>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
-};
-const Main = ({ userInfo }) => {
-  return (
-    <main>
-      {userInfo.userId === "" ? (
-        <div>로그인을 하셔야 서비스를 이용할 수 있습니다.</div>
-      ) : (
-        <div>
-          <Chracter userInfo={userInfo} />
-          <Friend userInfo={userInfo} />
-          <Point userInfo={userInfo} />
-          <Map userInfo={userInfo} />
-          <FAQ userInfo={userInfo} />
-        </div>
-      )}
-    </main>
-  );
-};
-const Footer = ({ userInfo }) => {
-  return <footer>하단 {userInfo.userRole}</footer>;
-};
-
-const Chracter = ({ userInfo }) => {
-  return (
-    <div>
-      <div>{userInfo.userName}님 캐릭터 변경 서비스</div>
-      <div>
-        <ChoiceChracter userInfo={userInfo}>
-          캐릭터 종류 선택 서비스
-        </ChoiceChracter>
-      </div>
-    </div>
-  );
-};
-
-const ChoiceChracter = ({ userInfo }) => {
-  return <div>{userInfo.userName}님 캐릭터 종류 선택 서비스</div>;
-};
-
-const Friend = ({ userInfo }) => {
-  return <div>{userInfo.userName}님 친구관리 서비스</div>;
-};
-
-const Point = ({ userInfo }) => {
-  return <div>{userInfo.userName}님 포인트 구매 서비스</div>;
-};
-
-const Map = ({ userInfo }) => {
-  return <div>{userInfo.userName}님 주변 지도 안내</div>;
-};
-
-const FAQ = ({ userInfo }) => {
-  return <div>{userInfo.userName}님 고객센터 FAQ 서비스</div>;
-};
+import { useRef } from "react";
 
 function App() {
-  // useState 로 로그인한 사용자 정보 관리
-  const [userInfo, setUserInfo] = useState({
-    userId: "",
-    userName: "",
-    userRole: "GUEST",
-  });
+  // 태그 참조
+  const inputRef = useRef(null);
+  const handleFocus = () => {
+    // current 를 통해서 태그 참조
+    inputRef.current.focus();
+  };
   return (
     <div>
-      <Header userInfo={userInfo} setUserInfo={setUserInfo} />
-      <Main userInfo={userInfo} setUserInfo={setUserInfo} />
-      <Footer userInfo={userInfo} setUserInfo={setUserInfo} />
+      <h1>포커스 이동</h1>
+      {/* ref로 연결한다. */}
+      <input ref={inputRef} placeholder="아이디 입력" />
+      <button onClick={handleFocus}>입력창 이동</button>
     </div>
   );
 }
@@ -137,162 +31,130 @@ function App() {
 export default App;
 ```
 
-## Context API 활용
+### 값 접근 및 저장
 
-### 추천 폴더 구조
-
-- `/src/contexts` 폴더 생설을 권장.
-  : context 는 `문맥` 이라는 뜻인데 `일관성` 이라고도 한다.
-  : context 는 `프로그램 전체 목표를 이루기 위한 흐름` 정도로 이해하자.
-
-### 추천파일
-
-- `/src/contexts` 파일 생성
-  : `UserInfoContext.jsx` 생성
+- 리랜더링을 해도 값을 보관한다.
 
 ```jsx
-import { createContext, useState } from "react";
-
-// 외부에서 context state 를 사용해야 한다!
-export const UserInfoContext = createContext();
-
-// context 에 지정한 범위로 접근해서 만들어둔 값, 기능을 위한 공급자(Provider) 생성.
-export const UserInfoProvider = ({ children }) => {
-  // useState 로 로그인한 사용자 정보 관리
-  const [userInfo, setUserInfo] = useState({
-    userId: "",
-    userName: "",
-    userRole: "GUEST",
-  });
-  return (
-    <UserInfoContext.Provider value={{ userInfo, setUserInfo }}>
-      {/* 지역범위 */}
-      {children}
-    </UserInfoContext.Provider>
-  );
-};
-```
-
-- App.jsx
-
-```jsx
-import { useContext } from "react";
-import { UserInfoContext, UserInfoProvider } from "./contexts/UserInfoContext";
-
-const Header = () => {
-  const { userInfo, setUserInfo } = useContext(UserInfoContext);
-  return (
-    <header>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <p>로고</p>
-        <nav>
-          {userInfo.userId === "" ? (
-            <div>
-              <button
-                onClick={() => {
-                  setUserInfo({
-                    userId: "hong",
-                    userName: "gildong",
-                    userRole: "MEMBER",
-                  });
-                }}
-              >
-                로그인
-              </button>
-              <button onClick={() => {}}>회원가입</button>
-            </div>
-          ) : (
-            <div>
-              <button
-                onClick={() => {
-                  setUserInfo({
-                    userId: "",
-                    userName: "",
-                    userRole: "GUEST",
-                  });
-                }}
-              >
-                로그아웃
-              </button>
-              <button onClick={() => {}}>{userInfo.userName}님 정보수정</button>
-            </div>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
-};
-const Main = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return (
-    <main>
-      {userInfo.userId === "" ? (
-        <div>로그인을 하셔야 서비스를 이용할 수 있습니다.</div>
-      ) : (
-        <div>
-          <Chracter />
-          <Friend />
-          <Point />
-          <Map />
-          <FAQ />
-        </div>
-      )}
-    </main>
-  );
-};
-const Footer = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <footer>하단 {userInfo.userRole}</footer>;
-};
-
-const Chracter = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return (
-    <div>
-      <div>{userInfo.userName}님 캐릭터 변경 서비스</div>
-      <div>
-        <ChoiceChracter>캐릭터 종류 선택 서비스</ChoiceChracter>
-      </div>
-    </div>
-  );
-};
-
-const ChoiceChracter = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <div>{userInfo.userName}님 캐릭터 종류 선택 서비스</div>;
-};
-
-const Friend = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <div>{userInfo.userName}님 친구관리 서비스</div>;
-};
-
-const Point = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <div>{userInfo.userName}님 포인트 구매 서비스</div>;
-};
-
-const Map = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <div>{userInfo.userName}님 주변 지도 안내</div>;
-};
-
-const FAQ = () => {
-  const { userInfo } = useContext(UserInfoContext);
-  return <div>{userInfo.userName}님 고객센터 FAQ 서비스</div>;
-};
+import { useRef, useState } from "react";
 
 function App() {
+  const countRef = useRef(0);
+  const incre = () => {
+    countRef.current++;
+    console.log(countRef.current);
+  };
   return (
     <div>
-      <UserInfoProvider>
-        <Header />
-        <Main />
-        <Footer />
-      </UserInfoProvider>
+      <h1>값 보관 및 저장 {countRef.current}</h1>
+      <button onClick={incre}>증가</button>
     </div>
   );
 }
+
+export default App;
+```
+
+## 응용예제
+
+- 스크롤 버튼 이동
+
+```jsx
+import { useRef } from "react";
+
+function App() {
+  const compRef = useRef(null);
+  const topRef = useRef(null);
+  const moveCome = () => {
+    console.log("회사소개로 이동");
+    compRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+  const topMove = () => {
+    topRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+  return (
+    <div ref={topRef}>
+      <h1>스크롤 해보기</h1>
+      <button onClick={moveCome}>회사소개</button>
+      <div style={{ height: "100vh", backgroundColor: "hotpink" }}>인사말</div>
+      <div
+        ref={compRef}
+        style={{ height: "100vh", backgroundColor: "greenyellow" }}
+      >
+        회사소개
+      </div>
+
+      <button
+        onClick={topMove}
+        style={{ position: "fixed", right: 0, bottom: 0 }}
+      >
+        위로가기
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+- 값 초기화 해보기
+
+```jsx
+import { useRef } from "react";
+
+function App() {
+  const inputRef = useRef(null);
+  const clear = () => {
+    // 폼값 초기화
+    inputRef.current.value = "";
+  };
+  return (
+    <div>
+      <input ref={inputRef} placeholder="이름" />
+      <button onClick={clear}>값 초기화</button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+- 비디오 제어
+
+```jsx
+import { useRef } from "react";
+
+const App = () => {
+  const videoRef = useRef(null);
+  const prevV = () => {
+    videoRef.current.currentTime -= 10;
+    videoRef.current.play();
+  };
+  const playV = () => {
+    videoRef.current.currentTime = 0;
+    videoRef.current.play();
+  };
+  const stopV = () => {
+    videoRef.current.currentTime = 0;
+    videoRef.current.pause();
+  };
+  const nextV = () => {
+    videoRef.current.currentTime += 10;
+    videoRef.current.play();
+  };
+  return (
+    <div>
+      <h1>비디오 제어</h1>
+      <video ref={videoRef} src="비디오주소" autoPlay muted controls></video>
+      <div>
+        <button onClick={prevV}>10초전</button>
+        <button onClick={playV}>play</button>
+        <button onClick={stopV}>stop</button>
+        <button onClick={nextV}>10초후</button>
+      </div>
+    </div>
+  );
+};
 
 export default App;
 ```
