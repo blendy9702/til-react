@@ -1,184 +1,242 @@
-# React.memo
+# 커스텀 훅(custom hook)
 
-- `컴포넌트`에 `props가 바뀌지 않는 한 리랜더링 안됨.`
-- 성능을 상당히 올려줌
-- 회사 프로덕트에서는 리랜더링 횟수를 줄이는게 실력.
-- 메모제이션 방안(useMemo, useCallback, React.memo) 중 가장 추천.
+## hook 이란?
+
+- hook은 우리말로 `걸다`, `덩달아서 실행` 정도가 되겠다.
+- hook은 영어로 `갈고리`
+- 리액트 컴포넌트의 state 와 lifecycle에 따라 같이 실행되는 함수.
+- useContext, useState, useEffect, useRef, useMemo, useCallback... 약 200개가 있다.
+- 개발자가 리액트 빌트인 hook 처럼 만든 hook 을 커스텀 훅이라고 한다.
+- useLocation, useNavigation...
+- 나도 hook 을 필요로 한 만큼 만들어 사용할 수 있다.
+
+## hook 유의사항
+
+- 동일한 기능을 여러번 사용하면 함수를 만들어 보자.
+- 이 함수가 컴포넌트에 사용되면 hook을 만들어 보자.
+- `/src/hooks` 폴더에 모아보자.
+- 파일명은 반드시 `use훅명.js`으로 생성해야 리액트 hook 처럼 사용 가능.
+
+## hook 사용 유의사항
+
+- 리액트 훅, 커스텀 훅은 반드시 `컴포넌트 내부에 배치.`
+- 리액트 훅, 커스텀 훅은 if문, for문 등 내부사용 불가능
+- 예외로 커스텀훅은 컴포넌트가 아닌 곳에도 사용할 수 있다.
 
 ## 기본 예제
 
 ```jsx
-import React, { useRef } from "react";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
 function App() {
-  const totalRef = useRef(3); // 1씩 증가하면서 id 관리
-  const [todos, setTodos] = useState([
-    { id: 1, text: "리액트 공부하기", completed: false },
-    { id: 2, text: "운동가기", completed: false },
-  ]);
-  // todo 관리 함수를 리랜더링시 재생성 하지 않도록 적용
-  // 1. 의존성 배열을 이용해 볼까?
-  // 2. 내부에서 처리해 볼까?
-  const addTodo = useCallback(
-    text => {
-      const newId = totalRef.current++;
-      setTodos([...todos, { id: newId, text: text, completed: false }]);
-      // setTodos(prev => [...prev, { id: newId, text: text, completed: false }]);
-    },
-    [todos],
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <h1>카운트 : {count}</h1>
+      <button onClick={() => setCount(count + 1)}>증가</button>
+    </div>
   );
-  // completed 변경
-  // 1. 의존성 배열을 이용해 볼까?
-  // 2. 내부에서 처리해 볼까?
-  const toggleTodo = useCallback(id => {
-    // const arr = todos.map(item =>
-    //   item.id === id ? { ...item, completed: !item.completed } : item,
-    // );
-    // setTodos(arr);
-    setTodos(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, completed: !item.completed } : item,
-      ),
-    );
+}
+
+export default App;
+```
+
+## 훅으로 수정 예제
+
+- App.jsx
+
+```jsx
+import { useCount } from "./hooks/useCounter";
+
+function App() {
+  const { count, plus, minus } = useCount(100);
+  return (
+    <div>
+      <h1>카운트 : {count}</h1>
+      <button onClick={() => plus()}>증가</button>
+      <button onClick={() => minus()}>감소</button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+- /src/hooks/useCounter.js
+
+```js
+import { useState } from "react";
+
+export function useCount(initvalue = 0) {
+  const [count, setCount] = useState(initvalue);
+  const plus = () => setCount(count + 1);
+  const minus = () => setCount(count - 1);
+  const reset = () => setCount(initvalue);
+
+  return { count, plus, minus, reset };
+}
+```
+
+## 실제 커스텀 훅 생성 과정
+
+- 동일한 기능에 반복 사용은 custom hook을 고민해보자.
+- 고민을 정말 많이 해야한다.
+- /src/hooks/useAxios.js
+
+```js
+import axios from "axios";
+import { useEffect, useState } from "react";
+// 보통 FE 개발자는 백엔드와 API 통신, 주소, 자료를 전달하고 결과를 받는다.
+// get, post, putm delete를 사용한다.
+// API 통신을 편리하게 사용할 수 있는 hook을 만들어 API 컨벤션을 제공.
+
+// 일반적 사용을 조사
+// const { data, error, loading } = useAxios("주소", "자료", "get");
+// const { data, error, loading } = useAxios("주소", "자료", "GET");
+// const { data, error, loading } = useAxios("주소", { 자료 }, "post");
+// const { data, error, loading } = useAxios("주소", null, "put");
+// const { data, error, loading } = useAxios("주소", 1, "delete");
+export function useAxios(_url, _payload = null, _method) {
+  // api 회신 결과
+  const [data, setData] = useState(null);
+  // api 회신 오류 결과
+  const [error, setError] = useState(null);
+  // api 호출 진행
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    // 로딩 진행중
+    setLoading(true);
+    // API 연동 실행
+    const fetchAPI = async () => {
+      try {
+        let response;
+        //  대문자 통일
+        let method = _method.toUppercase(_method);
+        switch (method) {
+          case "GET":
+            // axios.get("주소?id=1&num=2&cate=과일")
+            response = await axios.get(_url);
+            break;
+          case "POST":
+            // axios.post("주소", {객체})
+            response = await axios.post(_url, _payload);
+            break;
+          case "PUT":
+            // axios.put("주소", {객체})
+            response = await axios.put(_url, _payload);
+            break;
+          case "DELETE":
+            // axios.delete("주소?id=5")
+            response = await axios.delete(_url);
+            break;
+          default:
+            throw new Error(`${_method}잘못 보냄.`);
+        }
+        setData(response);
+      } catch (error) {
+        console.log(error);
+        setError(error);
+      }
+    };
+    // 만들어둔 fetch 실행
+    fetchAPI();
+    // 로딩 완료
+    setLoading(false);
+  }, [_url, _payload, _method]);
+
+  return { data, error, loading };
+}
+```
+
+- /src/useLogin.js
+
+```js
+// 로그인에 관련된 코드를 모으고 use 훅들을 사용.
+// 일반 함수에는 use훅 사용 불가능해서 커스텀훅 만들어야 함
+
+import axios from "axios";
+import { useState } from "react";
+
+export const uselogin = () => {
+  // 로그인 상태
+  const [isLogin, setIsLogin] = useState(false);
+  //   사용자 정보
+  const [data, setData] = useState(null);
+  // 서버 에러
+  const [error, setError] = useState(null);
+  // 서버 연결중
+  const [loading, setLoading] = useState(false);
+  //   로그인 함수
+  const login = async (id, pw) => {
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/login", { id: id, pw: pw });
+      setData(res.data);
+      setIsLogin(true);
+    } catch (error) {
+      console.log(error);
+      setError(error);
+    }
+    setLoading(false);
+  };
+  return { data, loading, error, isLogin, login };
+};
+```
+
+- /src/useComponetnt.js
+
+```js
+import { useEffect, useState } from "react";
+
+// 화면의 리사이즈를 체크하는 용도의 customHook
+const useComponent = () => {
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
-  const deleteTodo = useCallback(id => {
-    const arr = todos.filter(item => item.id !== id);
-    setTodos(arr);
-  }, []);
+
+  return windowSize;
+};
+export default useComponent;
+```
+
+## 커스텀 훅 사용
+
+- App.jsx
+
+```jsx
+import { useAxios } from "./hooks/useAxios";
+import useComponent from "./hooks/useComponent";
+import { useCount } from "./hooks/useCount";
+import { useLogin } from "./hooks/useLogin";
+
+function App() {
+  // 커스텀 훅 사용법
+  const { count, add, minus } = useCount(100);
+  const { data, error, loading } = useAxios();
+  const { data, loading, error, isLogin, login } = useLogin();
+  const windowSize = useComponent();
 
   return (
     <div>
-      <h1>Todo Service </h1>
-      <AddTodo addTodo={addTodo} />
-      <TodoList todos={todos} toggleTodo={toggleTodo} deleteTodo={deleteTodo} />
+      <h1>카운트 : {count}</h1>
+      <button onClick={() => add()}>증가</button>
+      <button onClick={() => minus()}>감소</button>
     </div>
   );
 }
 export default App;
-
-function AddTodo({ addTodo }) {
-  const [text, setText] = useState("");
-  const handleSubmit = e => {
-    e.preventDefault();
-    addTodo(text);
-    setText("");
-  };
-  return (
-    <div>
-      <h3>할일 추가 </h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button type="submit">추가</button>
-      </form>
-    </div>
-  );
-}
-const TodoList = React.memo(function TodoList({
-  todos,
-  toggleTodo,
-  deleteTodo,
-}) {
-  console.log("TodoList 리랜더링");
-  return (
-    <div>
-      <h3>할일 전체 목록 </h3>
-      {todos.map(item => {
-        return (
-          <TodoItem
-            key={item.id}
-            todo={item}
-            toggleTodo={toggleTodo}
-            deleteTodo={deleteTodo}
-          />
-        );
-      })}
-    </div>
-  );
-});
-
-const TodoItem = React.memo(function TodoItem({
-  todo,
-  toggleTodo,
-  deleteTodo,
-}) {
-  console.log("TodoItem 리랜더링 : ", todo.text);
-  return (
-    <div>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => toggleTodo(todo.id)}
-      />
-      <span>{todo.text}</span>
-      <button onClick={() => deleteTodo(todo.id)}>삭제</button>
-    </div>
-  );
-});
-```
-
-## 리액트 프로젝트 메모제이션 (최적화)를 했는가?
-
-- 복잡한 배열요소에 대한 처리는 useMemo를 활용함.
-- 함수의 재정의를 제어하기 위해 useCallback을 활용함.
-- 리랜더링 횟수를 조절하기 위해 React.memo를 적용함.
-
-## 추가 샘플 (파일 컴포넌트 처리)
-
-```jsx
-import React from "react";
-
-const TodoItem = React.memo(({ todo, toggleTodo, deleteTodo }) => {
-  console.log("TodoItem 리랜더링 : ", todo.text);
-  return (
-    <div>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        onChange={() => toggleTodo(todo.id)}
-      />
-      <span>{todo.text}</span>
-      <button onClick={() => deleteTodo(todo.id)}>삭제</button>
-    </div>
-  );
-});
-
-export default TodoItem;
-```
-
-```jsx
-import React, { useState } from "react";
-
-const AddTodo = React.memo(({ addTodo }) => {
-  console.log("AddTodo 리랜더링");
-  const [text, setText] = useState("");
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    addTodo(text);
-    setText("");
-  };
-
-  return (
-    <div>
-      <h3>할일 추가</h3>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button type="submit">추가</button>
-      </form>
-    </div>
-  );
-});
-// eslint 설정을 통해 전체 코드에 적용 가능
-//  "react/display-name": "off"
-AddTodo.displayName = "AddTodo";
-export default AddTodo;
 ```
