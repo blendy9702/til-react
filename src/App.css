@@ -1,0 +1,14 @@
+.container {
+  display: grid;
+  /* 셀 너비 */
+  /* grid-template-columns: 1fr 1fr 1fr; */
+  grid-template-columns: repeat(3, 1fr);
+
+  /* 셀 높이 */
+  /* grid-template-rows: 200px 200px 500px; */
+  grid-template-rows: repeat(3, 1fr);
+}
+
+.item {
+  border: 3px solid #1e1e1e;
+}
