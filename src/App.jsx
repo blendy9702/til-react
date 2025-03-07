@@ -1,22 +1,18 @@
-import "./App.css";
+import { useState } from "react";
+import Child from "./pages/Child";
 
-function App() {
+const App = () => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState("");
+  console.log("App 리랜더링");
   return (
     <div>
-      <h1>Grid</h1>
-      <div className="container">
-        <div className="item">A</div>
-        <div className="item">B</div>
-        <div className="item">C</div>
-        <div className="item">D</div>
-        <div className="item">E</div>
-        <div className="item">F</div>
-        <div className="item">G</div>
-        <div className="item">H</div>
-        <div className="item">I</div>
-      </div>
+      <h2>count : {count}</h2>
+      <button onClick={() => setCount(count + 1)}>count 증가</button>
+      <input type="text" value={text} onChange={e => setText(e.target.value)} />
+      <Child />
     </div>
   );
-}
+};
 
 export default App;
